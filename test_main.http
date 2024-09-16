@@ -1,0 +1,44 @@
+# Testar o status do servidor
+GET http://127.0.0.1:8000/api/status
+Accept: application/json
+
+###
+
+# Atualizar o status do servidor
+PUT http://127.0.0.1:8000/api/status
+Content-Type: application/json
+
+{
+  "isRunning": false,
+  "consoleVisible": false
+}
+
+###
+
+# Obter todos os dispositivos
+GET http://127.0.0.1:8000/api/devices
+Accept: application/json
+
+###
+
+# Obter um dispositivo específico pelo hnuid
+GET http://127.0.0.1:8000/api/devices/201-001-40
+Accept: application/json
+
+###
+
+# Obter medições de um dispositivo específico
+GET http://127.0.0.1:8000/api/devices/201-001-40/measurements
+Accept: application/json
+
+###
+
+# Obter todas as medições de todos os dispositivos
+GET http://127.0.0.1:8000/api/devices/measurements
+Accept: application/json
+
+###
+
+# Resetar as medições de um dispositivo específico
+PUT http://127.0.0.1:8000/api/devices/201-001-40/zero
+Accept: application/json
