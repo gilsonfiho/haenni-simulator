@@ -22,19 +22,19 @@ Accept: application/json
 ###
 
 # Obter um dispositivo específico pelo hnuid
-GET http://127.0.0.1:8000/api/devices/201-001-40
-Accept: application/json
+#GET http://127.0.0.1:8000/api/devices/201-001-40
+#Accept: application/json
 
 ###
 
 # Obter medições de um dispositivo específico
-GET http://127.0.0.1:8000/api/devices/201-001-40/measurements
+GET http://127.0.0.1:8000/api/devices/201-001-40/measurements?num_measurements=10
 Accept: application/json
 
 ###
 
 # Obter todas as medições de todos os dispositivos
-GET http://127.0.0.1:8000/api/devices/measurements
+GET http://127.0.0.1:8000/api/devices/measurements?num_measurements=10
 Accept: application/json
 
 ###

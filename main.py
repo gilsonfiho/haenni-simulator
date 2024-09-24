@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Optional
+from datetime import datetime, timedelta
+import random
 
 app = FastAPI()
 
@@ -166,6 +168,28 @@ server_status = ServerStatus(
 )
 
 
+# Função para gerar medições dinâmicas
+def generate_measurements(num_measurements: int) -> List[Measurement]:
+    measurements = []
+    current_time = datetime.utcnow()
+
+    for i in range(num_measurements):
+        measurement = Measurement(
+            timestamp=(current_time - timedelta(seconds=5, milliseconds=100 * i)).isoformat() + "Z",
+            load=random.randint(100, 2000),
+            speed=round(random.uniform(1, 20), 5),
+            deltaTime=random.randint(100000, 500000),
+            distribution=[
+                random.randint(0, 100),
+                random.randint(0, 100),
+                random.randint(0, 100)
+            ]
+        )
+        measurements.append(measurement)
+
+    return measurements
+
+
 # Endpoints
 
 # Obter status do servidor
@@ -185,33 +209,37 @@ def update_status(isRunning: Optional[bool] = None, consoleVisible: Optional[boo
 
 
 # Obter todos os dispositivos
-@app.get("/api/devices", response_model=Dict[str, Device])
-def get_devices():
-    return devices
+# @app.get("/api/devices", response_model=Dict[str, Device])
+# def get_devices():
+#     return devices
 
 
 # Obter um dispositivo específico pelo hnuid
-@app.get("/api/devices/{hnuid}", response_model=Device)
-def get_device(hnuid: str):
-    device = devices.get(hnuid)
-    if not device:
-        raise HTTPException(status_code=404, detail="Device not found")
-    return device
+# @app.get("/api/devices/{hnuid}", response_model=Device)
+# def get_device(hnuid: str):
+#     device = devices.get(hnuid)
+#     if not device:
+#         raise HTTPException(status_code=404, detail="Device not found")
+#     return device
 
 
 # Obter medições de um dispositivo específico
-@app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
-def get_device_measurements(hnuid: str):
-    measurements = measurements_data.get(hnuid)
-    if not measurements:
-        raise HTTPException(status_code=404, detail="No measurements found for the device")
-    return measurements
+# @app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
+# def get_device_measurements(hnuid: str, num_measurements: int = 6):
+#     measurements = generate_measurements(num_measurements)
+#     if not measurements:
+#         raise HTTPException(status_code=404, detail="No measurements found for the device")
+#     return measurements
 
 
 # Obter todas as medições de todos os dispositivos
 @app.get("/api/devices/measurements", response_model=Dict[str, List[Measurement]])
-def get_all_measurements():
-    return measurements_data
+def get_all_measurements(num_measurements: int = 6):
+    m = {
+        "201-001-40": generate_measurements(num_measurements),
+        "201-001-41": generate_measurements(num_measurements)
+    }
+    return m
 
 
 # Resetar as medições de um dispositivo específico
