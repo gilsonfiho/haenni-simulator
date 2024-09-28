@@ -171,11 +171,11 @@ server_status = ServerStatus(
 # Função para gerar medições dinâmicas
 def generate_measurements(num_measurements: int) -> List[Measurement]:
     measurements = []
-    current_time = datetime.utcnow()
+    current_time = datetime.utcnow() + timedelta(hours=3)  # Adicionando 3 horas para simular um fuso horário
 
     for i in range(num_measurements):
         measurement = Measurement(
-            timestamp=(current_time - timedelta(seconds=5, milliseconds=100 * i)).isoformat() + "Z",
+            timestamp=(current_time - timedelta(seconds=1, milliseconds=200 * i)).isoformat() + "Z",
             load=random.randint(100, 2000),
             speed=round(random.uniform(1, 20), 5),
             deltaTime=random.randint(100000, 500000),
