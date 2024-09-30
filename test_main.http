@@ -34,7 +34,7 @@ Accept: application/json
 ###
 
 # Obter todas as medições de todos os dispositivos
-GET http://127.0.0.1:8000/api/devices/measurements?num_measurements=10
+GET http://127.0.0.1:8000/api/devices/measurements?num_measurements=2
 Accept: application/json
 
 ###

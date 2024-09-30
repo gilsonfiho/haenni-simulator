@@ -208,10 +208,10 @@ def update_status(isRunning: Optional[bool] = None, consoleVisible: Optional[boo
     return server_status
 
 
-# Obter todos os dispositivos
-# @app.get("/api/devices", response_model=Dict[str, Device])
-# def get_devices():
-#     return devices
+#Obter todos os dispositivos
+@app.get("/api/devices", response_model=Dict[str, Device])
+def get_devices():
+    return devices
 
 
 # Obter um dispositivo específico pelo hnuid
@@ -240,6 +240,10 @@ def get_all_measurements(num_measurements: int = 6):
         "201-001-41": generate_measurements(num_measurements)
     }
     return m
+
+@app.put("/api/devices/measurements")
+def update_measurements(num_measurements: int = 6):
+    return "OK"
 
 
 # Resetar as medições de um dispositivo específico
