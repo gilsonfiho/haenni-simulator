@@ -171,7 +171,7 @@ server_status = ServerStatus(
 # Função para gerar medições dinâmicas
 def generate_measurements(num_measurements: int) -> List[Measurement]:
     measurements = []
-    current_time = datetime.utcnow() + timedelta(hours=3)  # Adicionando 3 horas para simular um fuso horário
+    current_time = datetime.utcnow() + timedelta(hours=0)  # Adicionando 3 horas para simular um fuso horário
 
     for i in range(num_measurements):
         measurement = Measurement(
@@ -234,7 +234,7 @@ def get_devices():
 
 # Obter todas as medições de todos os dispositivos
 @app.get("/api/devices/measurements", response_model=Dict[str, List[Measurement]])
-def get_all_measurements(num_measurements: int = 3):
+def get_all_measurements(num_measurements: int = 10):
     m = {
         "201-001-40": generate_measurements(num_measurements),
         "201-001-41": generate_measurements(num_measurements)
@@ -242,7 +242,7 @@ def get_all_measurements(num_measurements: int = 3):
     return m
 
 @app.put("/api/devices/measurements")
-def update_measurements(num_measurements: int = 6):
+def update_measurements():
     return "OK"
 
 
