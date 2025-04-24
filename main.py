@@ -214,27 +214,27 @@ def get_devices():
     return devices
 
 
-# Obter um dispositivo específico pelo hnuid
-# @app.get("/api/devices/{hnuid}", response_model=Device)
-# def get_device(hnuid: str):
-#     device = devices.get(hnuid)
-#     if not device:
-#         raise HTTPException(status_code=404, detail="Device not found")
-#     return device
+#Obter um dispositivo específico pelo hnuid
+@app.get("/api/devices/{hnuid}", response_model=Device)
+def get_device(hnuid: str):
+    device = devices.get(hnuid)
+    if not device:
+        raise HTTPException(status_code=404, detail="Device not found")
+    return device
 
 
-# Obter medições de um dispositivo específico
-# @app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
-# def get_device_measurements(hnuid: str, num_measurements: int = 6):
-#     measurements = generate_measurements(num_measurements)
-#     if not measurements:
-#         raise HTTPException(status_code=404, detail="No measurements found for the device")
-#     return measurements
+#Obter medições de um dispositivo específico
+@app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
+def get_device_measurements(hnuid: str, num_measurements: int = 6):
+    measurements = generate_measurements(num_measurements)
+    if not measurements:
+        raise HTTPException(status_code=404, detail="No measurements found for the device")
+    return measurements
 
 
 # Obter todas as medições de todos os dispositivos
 @app.get("/api/devices/measurements", response_model=Dict[str, List[Measurement]])
-def get_all_measurements(num_measurements: int = 10):
+def get_all_measurements(num_measurements: int = 1):
     m = {
         "201-001-40": generate_measurements(num_measurements),
         "201-001-41": generate_measurements(num_measurements)
