@@ -53,7 +53,7 @@ devices = {
         serial=1,
         ready=True,
         indication="0 kg",
-        load=0,
+        load=random.randint(0, 5000),
         units={"load": "kg", "temperature": "°C"},
         zeroIndication=True,
         motionIndication=False,
@@ -74,7 +74,7 @@ devices = {
         serial=1,
         ready=True,
         indication="0 kg",
-        load=0,
+        load=random.randint(0, 5000),
         units={"load": "kg", "temperature": "°C"},
         zeroIndication=True,
         motionIndication=False,
@@ -238,10 +238,11 @@ def get_device(hnuid: str, qtd: int = 1):
 @app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
 def get_device_measurements(hnuid: str, qtd: int = 1):
     print('get','/api/devices/{hnuid}/measurements', hnuid)
-    measurements = generate_measurements(qtd)
-    if not measurements:
-        raise HTTPException(status_code=404, detail="No measurements found for the device")
-    return measurements
+    return []
+    # measurements = generate_measurements(qtd)
+    # if not measurements:
+    #     raise HTTPException(status_code=404, detail="No measurements found for the device")
+    # return measurements
 
 
 
