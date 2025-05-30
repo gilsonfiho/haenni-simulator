@@ -56,7 +56,7 @@ devices = {
         load=random.randint(0, 5000),
         units={"load": "kg", "temperature": "°C"},
         zeroIndication=True,
-        motionIndication=False,
+        motionIndication=bool(random.getrandbits(1)),
         overloadIndication=False,
         underloadIndication=False,
         minloadIndication=True,
@@ -77,7 +77,7 @@ devices = {
         load=random.randint(0, 5000),
         units={"load": "kg", "temperature": "°C"},
         zeroIndication=True,
-        motionIndication=False,
+        motionIndication=bool(random.getrandbits(1)),
         overloadIndication=False,
         underloadIndication=False,
         minloadIndication=True,
@@ -214,6 +214,13 @@ def update_status(isRunning: Optional[bool] = None, consoleVisible: Optional[boo
 @app.get("/api/devices", response_model=Dict[str, Device])
 def get_devices():
     print('get','/api/devices')
+    # Gera novos valores aleatórios para os campos 'load' e 'motionIndication' dos dispositivos a cada requisição
+
+    for device in devices.values():
+        if hasattr(device, "load"):
+            device.load = random.randint(0, 5000)
+        if hasattr(device, "motionIndication"):
+            device.motionIndication = bool(random.getrandbits(1))
     return devices
 
 
@@ -229,6 +236,12 @@ def get_device(hnuid: str, qtd: int = 1):
         return m
     else:
         device = devices.get(hnuid)
+        if device:
+            if hasattr(device, "load"):
+                device.load = random.randint(0, 5000)
+            if hasattr(device, "motionIndication"):
+                device.motionIndication = bool(random.getrandbits(1))
+
         if not device:
             raise HTTPException(status_code=404, detail="Device not found")
         return device
