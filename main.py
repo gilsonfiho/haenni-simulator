@@ -9,6 +9,12 @@ app = FastAPI()
 
 # Modelo para versões de firmware, hardware e hnp
 class Version(BaseModel):
+    """Modelo para versões de firmware, hardware e hnp.
+    Attributes:
+        firmware (str): Versão do firmware.
+        hardware (str): Versão do hardware.
+        hnp (str): Versão do HNP.
+    """
     firmware: str
     hardware: str
     hnp: str
