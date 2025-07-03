@@ -279,7 +279,7 @@ def generate_measurements(num_measurements: int) -> List[Measurement]:
         List[Measurement]: Lista de objetos Measurement simulados.
     """
     measurements = []
-    current_time = datetime.utcnow()
+    current_time = datetime.utcnow() + timedelta(hours=0)  # Adicionando 3 horas para simular um fuso horário
 
     for i in range(num_measurements):
         measurement = Measurement(
@@ -287,7 +287,11 @@ def generate_measurements(num_measurements: int) -> List[Measurement]:
             load=random.randint(100, 2000),
             speed=round(random.uniform(1, 20), 5),
             deltaTime=random.randint(100000, 500000),
-            distribution=[random.randint(0, 100) for _ in range(3)]
+            distribution=[
+                random.randint(0, 100),
+                random.randint(0, 100),
+                random.randint(0, 100)
+            ]
         )
         measurements.append(measurement)
 
@@ -334,6 +338,7 @@ def get_devices():
     Returns:
         Dict[str, Device]: Dicionário com dados dos dispositivos.
     """
+    # Gera novos valores aleatórios para os campos 'load' e 'motionIndication' dos dispositivos a cada requisição
     print('get', '/api/devices')
     for device in devices.values():
         if hasattr(device, "load"):
@@ -357,19 +362,23 @@ def get_device(hnuid: str, qtd: int = 1):
     """
     print('get', '/api/devices/{hnuid}', hnuid)
     if hnuid == "measurements":
-        return {
+        m = {
             "400-001-40": generate_measurements(qtd),
             "400-001-41": generate_measurements(qtd)
         }
-    device = devices.get(hnuid)
-    if device:
-        if hasattr(device, "load"):
-            device.load = random.randint(0, 5000)
-        if hasattr(device, "motionIndication"):
-            device.motionIndication = bool(random.getrandbits(1))
-    if not device:
-        raise HTTPException(status_code=404, detail="Device not found")
-    return device
+        return m
+    else:
+        device = devices.get(hnuid)
+        if device:
+            if hasattr(device, "load"):
+                device.load = random.randint(0, 5000)
+            if hasattr(device, "motionIndication"):
+                device.motionIndication = bool(random.getrandbits(1))
+
+        if not device:
+            raise HTTPException(status_code=404, detail="Device not found")
+        return device
+
 
 
 @app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
