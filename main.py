@@ -1,3 +1,15 @@
+"""
+===============================================================================
+HAENNI Simulator API - Simulador de Balanças Dinâmicas e Estáticas (WL400/WL108)
+===============================================================================
+
+Autor: Jose Pacelli Moreira de Oliveira (https://github.com/josepacelli)
+
+Contribuidores:
+Gilson Almeida(https://github.com/gilsonfiho)
+
+"""
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Optional, Union
@@ -6,10 +18,10 @@ import random
 
 app = FastAPI()
 
-
-# Modelo para versões de firmware, hardware e hnp
 class Version(BaseModel):
-    """Modelo para versões de firmware, hardware e hnp.
+    """
+    Modelo para versões de firmware, hardware e HNP.
+
     Attributes:
         firmware (str): Versão do firmware.
         hardware (str): Versão do hardware.
@@ -20,8 +32,31 @@ class Version(BaseModel):
     hnp: str
 
 
-# Modelo para dispositivos
 class Device(BaseModel):
+    """
+    Modelo para representar um dispositivo conectado ao sistema.
+
+    Attributes:
+        hnuid (str): Identificador único do dispositivo.
+        className (str): Classe do dispositivo.
+        modelName (str): Modelo do dispositivo.
+        serial (int): Número de série.
+        versions (Version): Versões de firmware, hardware e HNP.
+        ready (Optional[bool]): Se o dispositivo está pronto.
+        indication (Optional[str]): Indicação atual do dispositivo. (String)
+        load (Optional[int]): Carga atual medida. (int)
+        units (Optional[Dict[str, str]]): Unidades usadas nas medições.
+        zeroIndication (Optional[bool]): Indicação de carga zero.
+        motionIndication (Optional[bool]): Indicação de movimento.
+        overloadIndication (Optional[bool]): Indicação de sobrecarga.
+        underloadIndication (Optional[bool]): Indicação de subcarga.
+        minloadIndication (Optional[bool]): Indicação de carga mínima.
+        division (Optional[int]): Divisão de medição.
+        capacity (Optional[int]): Capacidade máxima.
+        adjustmentCounter (Optional[int]): Contador de ajustes.
+        firmwareChecksum (Optional[str]): Checksum do firmware.
+        error (Optional[int]): Código de erro.
+    """
     hnuid: str
     className: str
     modelName: str
@@ -42,9 +77,9 @@ class Device(BaseModel):
     firmwareChecksum: Optional[str] = None
     error: Optional[int] = None
 
-
 # Exemplo de dados dos dispositivos
 devices = {
+    #Exemplo de Dados do Modulo de Comunicacao E9023.1
     "100-002-1": Device(
         hnuid="100-002-1",
         className="PC Interface",
@@ -52,6 +87,7 @@ devices = {
         serial=1,
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0")
     ),
+    #Exemplos de Dados dos Modulos de Balanças Dinamicas WL400
     "400-001-40": Device(
         hnuid="400-001-40",
         className="WL 400",
@@ -94,6 +130,7 @@ devices = {
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0"),
         error=1
     ),
+    #Exemplos de Dados dos Módulos de Balanças Estaticas WL108
     "180-001-20": Device(
         hnuid="180-001-20",
         className="WL 180",
@@ -138,9 +175,17 @@ devices = {
     )
 }
 
-
-# Modelo para medições
 class Measurement(BaseModel):
+    """
+    Modelo para representar uma medição de carga.
+
+    Attributes:
+        timestamp (str): Data e hora da medição.
+        load (int): Valor de carga medido.
+        speed (float): Velocidade estimada.
+        deltaTime (Optional[int]): Tempo entre medições.
+        distribution (List[int]): Distribuição de carga.
+    """
     timestamp: str
     load: int
     speed: float
@@ -148,7 +193,11 @@ class Measurement(BaseModel):
     distribution: List[int]
 
 
-# Exemplo de medições dos dispositivos
+"""
+Exemplos de medições realizadas pelo Conjunto da Balança Dinâmica WL400.
+As medições são obtidas a partir dos eventos gerados no endpoint:
+http://127.0.0.1:8000/api/devices/measurements
+"""
 measurements_data = {
     "400-001-40": [
         Measurement(
@@ -186,6 +235,11 @@ measurements_data = {
     ]
 }
 
+"""
+Para a Balança Estática, os valores de peso são disponibilizados em tempo real por meio dos 
+atributos "load" (inteiro) e "indication" (string), acessíveis pelo endpoint:
+http://127.0.0.1:8000/api/devices
+"""
 
 # Modelo para status do servidor
 class ServerStatus(BaseModel):
@@ -199,7 +253,6 @@ class ServerStatus(BaseModel):
     hnpVersion: str
     wl103LibraryVersion: str
     wl103DriverVersion: str
-
 
 # Exemplo de status do servidor
 server_status = ServerStatus(
@@ -215,9 +268,16 @@ server_status = ServerStatus(
     wl103DriverVersion="2.8.40"
 )
 
-
-# Função para gerar medições dinâmicas
 def generate_measurements(num_measurements: int) -> List[Measurement]:
+    """
+    Função para gerar medições dinâmicas
+
+    Args:
+        num_measurements (int): Quantidade de medições a serem geradas.
+
+    Returns:
+        List[Measurement]: Lista de objetos Measurement simulados.
+    """
     measurements = []
     current_time = datetime.utcnow() + timedelta(hours=0)  # Adicionando 3 horas para simular um fuso horário
 
@@ -238,18 +298,30 @@ def generate_measurements(num_measurements: int) -> List[Measurement]:
     return measurements
 
 
-# Endpoints
-
-# Obter status do servidor
 @app.get("/api/status", response_model=ServerStatus)
 def get_status():
+    """
+    Obter status do servidor
+
+    Returns:
+        ServerStatus: Dados atuais do status do servidor.
+    """
     print('get', '/api/status')
     return server_status
 
 
-# Atualizar status do servidor
 @app.put("/api/status", response_model=ServerStatus)
 def update_status(isRunning: Optional[bool] = None, consoleVisible: Optional[bool] = None):
+    """
+    Atualiza o status do servidor.
+
+    Args:
+        isRunning (Optional[bool]): Define se o servidor está em execução.
+        consoleVisible (Optional[bool]): Define a visibilidade do console.
+
+    Returns:
+        ServerStatus: Novo status atualizado do servidor.
+    """
     print('get', '/api/status', isRunning, consoleVisible)
     if isRunning is not None:
         server_status.isRunning = isRunning
@@ -258,12 +330,16 @@ def update_status(isRunning: Optional[bool] = None, consoleVisible: Optional[boo
     return server_status
 
 
-# Obter todos os dispositivos
 @app.get("/api/devices", response_model=Dict[str, Device])
 def get_devices():
-    print('get', '/api/devices')
-    # Gera novos valores aleatórios para os campos 'load' e 'motionIndication' dos dispositivos a cada requisição
+    """
+    Obter todos os dispositivos
 
+    Returns:
+        Dict[str, Device]: Dicionário com dados dos dispositivos.
+    """
+    # Gera novos valores aleatórios para os campos 'load' e 'motionIndication' dos dispositivos a cada requisição
+    print('get', '/api/devices')
     for device in devices.values():
         if hasattr(device, "load"):
             device.load = random.randint(0, 5000)
@@ -272,9 +348,18 @@ def get_devices():
     return devices
 
 
-# Obter um dispositivo específico pelo hnuid
 @app.get("/api/devices/{hnuid}", response_model=Union[Device, Dict[str, List[Measurement]]])
 def get_device(hnuid: str, qtd: int = 1):
+    """
+    Obter um dispositivo específico pelo hnuid
+
+    Args:
+        hnuid (str): ID do dispositivo ou "measurements".
+        qtd (int): Quantidade de medições simuladas, se aplicável.
+
+    Returns:
+        Union[Device, Dict[str, List[Measurement]]]: Dados do dispositivo ou medições.
+    """
     print('get', '/api/devices/{hnuid}', hnuid)
     if hnuid == "measurements":
         m = {
@@ -295,9 +380,19 @@ def get_device(hnuid: str, qtd: int = 1):
         return device
 
 
-# Obter medições de um dispositivo específico
+
 @app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
 def get_device_measurements(hnuid: str, qtd: int = 1):
+    """
+    Obter medições de um dispositivo específico
+
+    Args:
+        hnuid (str): ID do dispositivo.
+        qtd (int): Quantidade de medições desejadas.
+
+    Returns:
+        List[Measurement]: Lista de medições simuladas.
+    """
     print('get', '/api/devices/{hnuid}/measurements', hnuid)
     return []
     # measurements = generate_measurements(qtd)
@@ -308,13 +403,27 @@ def get_device_measurements(hnuid: str, qtd: int = 1):
 
 @app.put("/api/devices/measurements")
 def update_measurements():
+    """
+    Endpoint para simular atualização de medições.
+
+    Returns:
+        str: Confirmação da operação.
+    """
     print('put', '/api/devices/measurements')
     return "OK"
 
 
-# Resetar as medições de um dispositivo específico
 @app.put("/api/devices/{hnuid}/zero")
 def reset_device(hnuid: str):
+    """
+    Reseta as medições de um dispositivo específico
+
+    Args:
+        hnuid (str): ID do dispositivo.
+
+    Returns:
+        dict: Mensagem de confirmação do reset.
+    """
     print('put', '/api/devices/{hnuid}/zero', hnuid)
     device = devices.get(hnuid)
     if not device:
