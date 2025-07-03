@@ -46,9 +46,9 @@ devices = {
         serial=1,
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0")
     ),
-    "201-001-40": Device(
-        hnuid="201-001-40",
-        className="WL 200",
+    "400-001-40": Device(
+        hnuid="400-001-40",
+        className="WL 400",
         modelName="10 t",
         serial=1,
         ready=True,
@@ -67,8 +67,50 @@ devices = {
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0"),
         error=1
     ),
-    "201-001-41": Device(
-        hnuid="201-001-41",
+    "400-001-41": Device(
+        hnuid="400-001-41",
+        className="WL 400",
+        modelName="10 t",
+        serial=1,
+        ready=True,
+        indication="0 kg",
+        load=random.randint(0, 5000),
+        units={"load": "kg", "temperature": "°C"},
+        zeroIndication=True,
+        motionIndication=bool(random.getrandbits(1)),
+        overloadIndication=False,
+        underloadIndication=False,
+        minloadIndication=True,
+        division=50,
+        capacity=10000,
+        adjustmentCounter=7,
+        firmwareChecksum="1871h",
+        versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0"),
+        error=1
+    ),
+    "180-001-20": Device(
+        hnuid="180-001-20",
+        className="WL 380",
+        modelName="10 t",
+        serial=1,
+        ready=True,
+        indication="0 kg",
+        load=random.randint(0, 5000),
+        units={"load": "kg", "temperature": "°C"},
+        zeroIndication=True,
+        motionIndication=bool(random.getrandbits(1)),
+        overloadIndication=False,
+        underloadIndication=False,
+        minloadIndication=True,
+        division=50,
+        capacity=10000,
+        adjustmentCounter=7,
+        firmwareChecksum="1871h",
+        versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0"),
+        error=1
+    ),
+    "180-001-21": Device(
+        hnuid="180-001-21",
         className="WL 200",
         modelName="10 t",
         serial=1,
@@ -102,7 +144,7 @@ class Measurement(BaseModel):
 
 # Exemplo de medições dos dispositivos
 measurements_data = {
-    "201-001-40": [
+    "400-001-40": [
         Measurement(
             timestamp="2024-08-30T09:58:13.359819Z",
             load=2130,
@@ -119,7 +161,7 @@ measurements_data = {
         ),
         # Outras medições...
     ],
-    "201-001-41": [
+    "400-001-41": [
         Measurement(
             timestamp="2024-08-30T09:58:14.028612Z",
             load=3230,
@@ -195,14 +237,14 @@ def generate_measurements(num_measurements: int) -> List[Measurement]:
 # Obter status do servidor
 @app.get("/api/status", response_model=ServerStatus)
 def get_status():
-    print('get','/api/status')
+    print('get', '/api/status')
     return server_status
 
 
 # Atualizar status do servidor
 @app.put("/api/status", response_model=ServerStatus)
 def update_status(isRunning: Optional[bool] = None, consoleVisible: Optional[bool] = None):
-    print('get','/api/status', isRunning, consoleVisible)
+    print('get', '/api/status', isRunning, consoleVisible)
     if isRunning is not None:
         server_status.isRunning = isRunning
     if consoleVisible is not None:
@@ -210,10 +252,10 @@ def update_status(isRunning: Optional[bool] = None, consoleVisible: Optional[boo
     return server_status
 
 
-#Obter todos os dispositivos
+# Obter todos os dispositivos
 @app.get("/api/devices", response_model=Dict[str, Device])
 def get_devices():
-    print('get','/api/devices')
+    print('get', '/api/devices')
     # Gera novos valores aleatórios para os campos 'load' e 'motionIndication' dos dispositivos a cada requisição
 
     for device in devices.values():
@@ -224,14 +266,14 @@ def get_devices():
     return devices
 
 
-#Obter um dispositivo específico pelo hnuid
+# Obter um dispositivo específico pelo hnuid
 @app.get("/api/devices/{hnuid}", response_model=Union[Device, Dict[str, List[Measurement]]])
 def get_device(hnuid: str, qtd: int = 1):
-    print('get','/api/devices/{hnuid}', hnuid)
+    print('get', '/api/devices/{hnuid}', hnuid)
     if hnuid == "measurements":
         m = {
-            "201-001-40": generate_measurements(qtd),
-            "201-001-41": generate_measurements(qtd)
+            "400-001-40": generate_measurements(qtd),
+            "400-001-41": generate_measurements(qtd)
         }
         return m
     else:
@@ -247,10 +289,10 @@ def get_device(hnuid: str, qtd: int = 1):
         return device
 
 
-#Obter medições de um dispositivo específico
+# Obter medições de um dispositivo específico
 @app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
 def get_device_measurements(hnuid: str, qtd: int = 1):
-    print('get','/api/devices/{hnuid}/measurements', hnuid)
+    print('get', '/api/devices/{hnuid}/measurements', hnuid)
     return []
     # measurements = generate_measurements(qtd)
     # if not measurements:
@@ -258,17 +300,16 @@ def get_device_measurements(hnuid: str, qtd: int = 1):
     # return measurements
 
 
-
 @app.put("/api/devices/measurements")
 def update_measurements():
-    print('put','/api/devices/measurements')
+    print('put', '/api/devices/measurements')
     return "OK"
 
 
 # Resetar as medições de um dispositivo específico
 @app.put("/api/devices/{hnuid}/zero")
 def reset_device(hnuid: str):
-    print('put','/api/devices/{hnuid}/zero', hnuid)
+    print('put', '/api/devices/{hnuid}/zero', hnuid)
     device = devices.get(hnuid)
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
