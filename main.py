@@ -90,7 +90,7 @@ devices = {
     ),
     "180-001-20": Device(
         hnuid="180-001-20",
-        className="WL 380",
+        className="WL 180",
         modelName="10 t",
         serial=1,
         ready=True,
@@ -111,7 +111,7 @@ devices = {
     ),
     "180-001-21": Device(
         hnuid="180-001-21",
-        className="WL 200",
+        className="WL 180",
         modelName="10 t",
         serial=1,
         ready=True,
