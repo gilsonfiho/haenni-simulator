@@ -1,3 +1,5 @@
 /venv/
 
 .DS_Store
+/build-linux.sh
+/build-mac.sh
