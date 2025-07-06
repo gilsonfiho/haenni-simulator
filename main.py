@@ -349,7 +349,7 @@ def get_devices():
 
 
 @app.get("/api/devices/{hnuid}", response_model=Union[Device, Dict[str, List[Measurement]]])
-def get_device(hnuid: str, qtd: int = 1):
+def get_device(hnuid: str, qtd: int = 5):
     """
     Obter um dispositivo específico pelo hnuid
 
@@ -382,7 +382,7 @@ def get_device(hnuid: str, qtd: int = 1):
 
 
 @app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
-def get_device_measurements(hnuid: str, qtd: int = 1):
+def get_device_measurements(hnuid: str, qtd: int = 5):
     """
     Obter medições de um dispositivo específico
 
@@ -394,7 +394,7 @@ def get_device_measurements(hnuid: str, qtd: int = 1):
         List[Measurement]: Lista de medições simuladas.
     """
     print('get', '/api/devices/{hnuid}/measurements', hnuid)
-    return []
+    return generate_measurements(qtd)
     # measurements = generate_measurements(qtd)
     # if not measurements:
     #     raise HTTPException(status_code=404, detail="No measurements found for the device")
