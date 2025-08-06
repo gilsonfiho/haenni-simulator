@@ -299,7 +299,7 @@ def generate_measurements(num_measurements: int) -> List[Measurement]:
                 random.randint(0, 100)
             ]
         )
-        measurements.append(measurement)
+        measurements.insert(measurement)
 
     return measurements
 
@@ -438,8 +438,8 @@ def get_device_measurements(hnuid: str, qtd: int = 8):
         ]
     )
 
-    # Adiciona a nova medição à lista do dispositivo
-    persistent_measurements[hnuid].append(new_measurement)
+    # Adiciona a nova medição à lista do dispositivo na primeira posição
+    persistent_measurements[hnuid].insert(0, new_measurement)
 
     # Retorna a lista completa de medições para o dispositivo
     return persistent_measurements[hnuid]
