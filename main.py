@@ -191,7 +191,7 @@ class Measurement(BaseModel):
         distribution (List[int]): Distribuição de carga.
     """
     timestamp: str
-    load: int
+    load: Optional[int]
     speed: float
     deltaTime: Optional[int] = None
     distribution: List[int]
@@ -403,7 +403,7 @@ def get_device_measurements(hnuid: str, qtd: int = 5):
     return generate_measurements(qtd)
 
 @app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
-def get_device_measurements(hnuid: str):
+def get_device_measurements(hnuid: str, qtd: int = 8):
     """
     Obtém e adiciona uma nova medição para um dispositivo específico.
     A cada chamada, uma nova medição é gerada e adicionada à lista de medições do dispositivo.
@@ -413,6 +413,8 @@ def get_device_measurements(hnuid: str):
 
     Returns:
         List[Measurement]: A lista atualizada de medições para o dispositivo.
+        :param hnuid: id do dispositivo
+        :param qtd:  quantidade de medições desejadas
     """
     print('get', '/api/devices/{hnuid}/measurements', hnuid)
 
@@ -420,10 +422,13 @@ def get_device_measurements(hnuid: str):
     if hnuid not in persistent_measurements:
         persistent_measurements[hnuid] = []
 
+    if len(persistent_measurements[hnuid]) >= qtd:
+        return persistent_measurements[hnuid]
+
     # Gera uma única nova medição
     new_measurement = Measurement(
         timestamp=datetime.utcnow().isoformat() + "Z",
-        load=random.randint(100, 5000),
+        load=random.choice([random.randint(50, 5000), None]),
         speed=round(random.uniform(1, 20), 5),
         deltaTime=random.choice([random.randint(700000, 900000), None]),
         distribution=[
