@@ -454,6 +454,7 @@ def update_measurements():
         str: Confirmação da operação.
     """
     print('put', '/api/devices/measurements')
+    persistent_measurements.clear()
     return "OK"
 
 
