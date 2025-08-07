@@ -16,6 +16,10 @@ from typing import List, Dict, Optional, Union
 from datetime import datetime, timedelta
 import random
 
+
+# Dicionário para armazenar medições persistentes por dispositivo
+
+
 app = FastAPI()
 
 class Version(BaseModel):
@@ -187,7 +191,7 @@ class Measurement(BaseModel):
         distribution (List[int]): Distribuição de carga.
     """
     timestamp: str
-    load: int
+    load: Optional[int]
     speed: float
     deltaTime: Optional[int] = None
     distribution: List[int]
@@ -234,6 +238,8 @@ measurements_data = {
         # Outras medições...
     ]
 }
+
+persistent_measurements: Dict[str, List[Measurement]] = {}
 
 """
 Para a Balança Estática, os valores de peso são disponibilizados em tempo real por meio dos 
@@ -293,7 +299,7 @@ def generate_measurements(num_measurements: int) -> List[Measurement]:
                 random.randint(0, 100)
             ]
         )
-        measurements.append(measurement)
+        measurements.insert(measurement)
 
     return measurements
 
@@ -381,7 +387,7 @@ def get_device(hnuid: str, qtd: int = 5):
 
 
 
-@app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
+@app.get("/api/devices/{hnuid}/measurements_old", response_model=List[Measurement])
 def get_device_measurements(hnuid: str, qtd: int = 5):
     """
     Obter medições de um dispositivo específico
@@ -395,10 +401,48 @@ def get_device_measurements(hnuid: str, qtd: int = 5):
     """
     print('get', '/api/devices/{hnuid}/measurements', hnuid)
     return generate_measurements(qtd)
-    # measurements = generate_measurements(qtd)
-    # if not measurements:
-    #     raise HTTPException(status_code=404, detail="No measurements found for the device")
-    # return measurements
+
+@app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
+def get_device_measurements(hnuid: str, qtd: int = 8):
+    """
+    Obtém e adiciona uma nova medição para um dispositivo específico.
+    A cada chamada, uma nova medição é gerada e adicionada à lista de medições do dispositivo.
+
+    Args:
+        hnuid (str): ID do dispositivo.
+
+    Returns:
+        List[Measurement]: A lista atualizada de medições para o dispositivo.
+        :param hnuid: id do dispositivo
+        :param qtd:  quantidade de medições desejadas
+    """
+    print('get', '/api/devices/{hnuid}/measurements', hnuid)
+
+    # Verifica se o dispositivo já tem uma lista de medições, se não, cria uma vazia
+    if hnuid not in persistent_measurements:
+        persistent_measurements[hnuid] = []
+
+    if len(persistent_measurements[hnuid]) >= qtd:
+        return persistent_measurements[hnuid]
+
+    # Gera uma única nova medição
+    new_measurement = Measurement(
+        timestamp=datetime.utcnow().isoformat() + "Z",
+        load=random.choice([random.randint(50, 5000), None]),
+        speed=round(random.uniform(1, 20), 5),
+        deltaTime=random.choice([random.randint(700000, 900000), None]),
+        distribution=[
+            random.randint(0, 100),
+            random.randint(0, 100),
+            random.randint(0, 100)
+        ]
+    )
+
+    # Adiciona a nova medição à lista do dispositivo na primeira posição
+    persistent_measurements[hnuid].insert(0, new_measurement)
+
+    # Retorna a lista completa de medições para o dispositivo
+    return persistent_measurements[hnuid]
 
 
 @app.put("/api/devices/measurements")
@@ -410,6 +454,7 @@ def update_measurements():
         str: Confirmação da operação.
     """
     print('put', '/api/devices/measurements')
+    persistent_measurements.clear()
     return "OK"
 
 
