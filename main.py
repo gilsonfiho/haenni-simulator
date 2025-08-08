@@ -292,7 +292,7 @@ def generate_measurements(num_measurements: int) -> List[Measurement]:
             timestamp=(current_time - timedelta(seconds=1, milliseconds=200 * i)).isoformat() + "Z",
             load=random.randint(100, 2000),
             speed=round(random.uniform(1, 20), 5),
-            deltaTime=random.randint(100000, 500000),
+            deltaTime=None if i == 0 else random.randint(100000, 500000),
             distribution=[
                 random.randint(0, 100),
                 random.randint(0, 100),
@@ -440,6 +440,8 @@ def get_device_measurements(hnuid: str, qtd: int = 8):
 
     # Adiciona a nova medição à lista do dispositivo na primeira posição
     persistent_measurements[hnuid].insert(0, new_measurement)
+    if len(persistent_measurements[hnuid]) == 1:
+        persistent_measurements[hnuid][0].deltaTime = None
 
     # Retorna a lista completa de medições para o dispositivo
     return persistent_measurements[hnuid]
