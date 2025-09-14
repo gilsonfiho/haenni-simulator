@@ -309,7 +309,7 @@ def generate_measurements(num_measurements: int) -> List[Measurement]:
     return measurements
 
 
-@app.get("/api/status", response_model=ServerStatus)
+@app.get("/api/status", response_model=ServerStatus,  tags=['Status'])
 def get_status():
     """
     Obter status do servidor
@@ -321,7 +321,7 @@ def get_status():
     return server_status
 
 
-@app.put("/api/status", response_model=ServerStatus)
+@app.put("/api/status", response_model=ServerStatus,  tags=['Status'])
 def update_status(isRunning: Optional[bool] = None, consoleVisible: Optional[bool] = None):
     """
     Atualiza o status do servidor.
@@ -341,7 +341,7 @@ def update_status(isRunning: Optional[bool] = None, consoleVisible: Optional[boo
     return server_status
 
 
-@app.get("/api/devices", response_model=Dict[str, Device])
+@app.get("/api/devices", response_model=Dict[str, Device] ,  tags=['Devices'])
 def get_devices():
     """
     Obter todos os dispositivos
@@ -359,7 +359,7 @@ def get_devices():
     return devices
 
 
-@app.get("/api/devices/{hnuid}", response_model=Union[Device, Dict[str, List[Measurement]]])
+@app.get("/api/devices/{hnuid}", response_model=Union[Device, Dict[str, List[Measurement]]],  tags=['Devices'])
 def get_device(hnuid: str, qtd: int = 5):
     """
     Obter um dispositivo específico pelo hnuid
@@ -391,7 +391,7 @@ def get_device(hnuid: str, qtd: int = 5):
         return device
 
 
-@app.get("/api/devices/{hnuid}/measurements_old", response_model=List[Measurement])
+@app.get("/api/devices/{hnuid}/measurements_old", response_model=List[Measurement] ,  tags=['Devices'])
 def get_device_measurements(hnuid: str, qtd: int = 5):
     """
     Obter medições de um dispositivo específico
@@ -407,7 +407,7 @@ def get_device_measurements(hnuid: str, qtd: int = 5):
     return generate_measurements(qtd)
 
 
-@app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
+@app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement],  tags=['Devices'])
 def get_device_measurements(hnuid: str, qtd: int = 8):
     """
     Obtém e adiciona uma nova medição para um dispositivo específico.
@@ -452,7 +452,7 @@ def get_device_measurements(hnuid: str, qtd: int = 8):
     return persistent_measurements[hnuid]
 
 
-@app.put("/api/devices/measurements")
+@app.put("/api/devices/measurements",  tags=['Devices'])
 def update_measurements():
     """
     Endpoint para simular atualização de medições.
@@ -465,16 +465,22 @@ def update_measurements():
     return "OK"
 
 
-@app.put("/api/devices/{hnuid}/zero")
+@app.put("/api/devices/{hnuid}/zero",
+         summary='Reseta as o ponto zero do dispositivo',
+         description='Reseta as medições de um dispositivo específico identificado pelo "hnuid".',
+         tags=['Devices'])
 def reset_device(hnuid: str):
     """
-    Reseta as medições de um dispositivo específico
+        Reseta a carga ZERO do dispositivo identificado pelo 'hnuid'.
 
-    Args:
-        hnuid (str): ID do dispositivo.
+        <p>Essa função permite redefinir a carga de um dispositivo identificado pelo 'hnuid' para zero.</p>
+        <p>Se o dispositivo não for encontrado, uma exceção será lançada com o código de status HTTP 404.</p>
 
-    Returns:
-        dict: Mensagem de confirmação do reset.
+        Parâmetros:
+            identificador_dispositivo (str): Identificador único do dispositivo ('hnuid').
+
+        Retorna:
+            dict: Mensagem de confirmação indicando que o dispositivo foi resetado.
     """
     print('put', '/api/devices/{hnuid}/zero', hnuid)
     device = devices.get(hnuid)
@@ -486,9 +492,10 @@ def reset_device(hnuid: str):
     return {"message": f"Device {hnuid} reset to zero"}
 
 
-@app.get("/api/ativar-erro", summary='Ativa erro em dispositivos',
+@app.get("/api/ativar-erro",
+         summary='Ativa erro em dispositivos',
          description='Ativa o erro informado em todos os dispositivos das classes "WL 400" e "WL 180".',
-         tags=['Dispositivos'])
+         tags=['Simulação de Erro'])
 def ativar_erro(codigo_erro: int = 1):
     """
     Ativa o erro informado em todos os dispositivos das classes 'WL 400' e 'WL 180'.
@@ -505,7 +512,10 @@ def ativar_erro(codigo_erro: int = 1):
     return f'Erro {codigo_erro} ativado em todos os dispositivos'
 
 
-@app.get("/api/desativar-erro")
+@app.get("/api/desativar-erro",
+         summary='Desativa erro em dispositivos',
+         description='Desativa o erro informado em todos os dispositivos das classes "WL 400" e "WL 180".',
+         tags=['Simulação de Erro'])
 def desativar_erro():
     """
     Desativa o erro 1 em todos os dispositivos.
