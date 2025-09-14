@@ -111,7 +111,7 @@ devices = {
         adjustmentCounter=7,
         firmwareChecksum="1871h",
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0"),
-        error=1
+        error=0
     ),
     "400-001-41": Device(
         hnuid="400-001-41",
@@ -132,7 +132,7 @@ devices = {
         adjustmentCounter=7,
         firmwareChecksum="1871h",
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0"),
-        error=1
+        error=0
     ),
     #Exemplos de Dados dos Módulos de Balanças Estaticas WL108
     "180-001-20": Device(
@@ -154,7 +154,7 @@ devices = {
         adjustmentCounter=7,
         firmwareChecksum="1871h",
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0"),
-        error=1
+        error=0
     ),
     "180-001-21": Device(
         hnuid="180-001-21",
@@ -175,7 +175,7 @@ devices = {
         adjustmentCounter=7,
         firmwareChecksum="1871h",
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0"),
-        error=1
+        error=0
     )
 }
 
@@ -479,3 +479,33 @@ def reset_device(hnuid: str):
     # Simulando o reset da carga do dispositivo para 0
     device.load = 0
     return {"message": f"Device {hnuid} reset to zero"}
+
+@app.get("/api/ativar-erro", summary='Ativa erro em dispositivos', description='Ativa o erro informado em todos os dispositivos das classes "WL 400" e "WL 180".', tags=['Dispositivos'])
+def ativar_erro(codigo_erro: int = 1):
+    """
+    Ativa o erro informado em todos os dispositivos das classes 'WL 400' e 'WL 180'.
+
+    Parâmetros:
+        codigo_erro (int): Código do erro a ser ativado.
+
+    Retorna:
+        str: confirmação da operação.
+    """
+    for dispositivo in devices.values():
+        if dispositivo.className in ["WL 400", "WL 180"]:
+            dispositivo.error = codigo_erro
+    return f'Erro {codigo_erro} ativado em todos os dispositivos'
+
+@app.get("/api/desativar-erro")
+def desativar_erro():
+    """
+    Desativa o erro 1 em todos os dispositivos.
+
+    Returns:
+        str: confirmação da operação.
+    """
+    print('get', '/api/desativar-erro')
+    for device in devices.values():
+        if device.className in ["WL 400", "WL 180"]:
+            device.error = 0
+    return "Erro desativado em todos os dispositivos"
