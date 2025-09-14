@@ -1,0 +1,5 @@
+para gerar o arquivo ssl
+
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+-keyout chave.pem -out certificado.pem \
+-config san.cnf -extensions req_ext

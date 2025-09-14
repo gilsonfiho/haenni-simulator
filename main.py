@@ -16,11 +16,11 @@ from typing import List, Dict, Optional, Union
 from datetime import datetime, timedelta
 import random
 
-
 # Dicionário para armazenar medições persistentes por dispositivo
 
 
 app = FastAPI()
+
 
 class Version(BaseModel):
     """
@@ -81,9 +81,10 @@ class Device(BaseModel):
     firmwareChecksum: Optional[str] = None
     error: Optional[int] = None
 
+
 # Exemplo de dados dos dispositivos
 devices = {
-    #Exemplo de Dados do Modulo de Comunicacao E9023.1
+    # Exemplo de Dados do Modulo de Comunicacao E9023.1
     "100-002-1": Device(
         hnuid="100-002-1",
         className="PC Interface",
@@ -91,7 +92,7 @@ devices = {
         serial=1,
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0")
     ),
-    #Exemplos de Dados dos Modulos de Balanças Dinamicas WL400
+    # Exemplos de Dados dos Modulos de Balanças Dinamicas WL400
     "400-001-40": Device(
         hnuid="400-001-40",
         className="WL 400",
@@ -134,7 +135,7 @@ devices = {
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0"),
         error=0
     ),
-    #Exemplos de Dados dos Módulos de Balanças Estaticas WL108
+    # Exemplos de Dados dos Módulos de Balanças Estaticas WL108
     "180-001-20": Device(
         hnuid="180-001-20",
         className="WL 180",
@@ -178,6 +179,7 @@ devices = {
         error=0
     )
 }
+
 
 class Measurement(BaseModel):
     """
@@ -247,6 +249,7 @@ atributos "load" (inteiro) e "indication" (string), acessíveis pelo endpoint:
 http://127.0.0.1:8000/api/devices
 """
 
+
 # Modelo para status do servidor
 class ServerStatus(BaseModel):
     isRunning: bool
@@ -259,6 +262,7 @@ class ServerStatus(BaseModel):
     hnpVersion: str
     wl103LibraryVersion: str
     wl103DriverVersion: str
+
 
 # Exemplo de status do servidor
 server_status = ServerStatus(
@@ -273,6 +277,7 @@ server_status = ServerStatus(
     wl103LibraryVersion="3.2.7",
     wl103DriverVersion="2.8.40"
 )
+
 
 def generate_measurements(num_measurements: int) -> List[Measurement]:
     """
@@ -386,7 +391,6 @@ def get_device(hnuid: str, qtd: int = 5):
         return device
 
 
-
 @app.get("/api/devices/{hnuid}/measurements_old", response_model=List[Measurement])
 def get_device_measurements(hnuid: str, qtd: int = 5):
     """
@@ -401,6 +405,7 @@ def get_device_measurements(hnuid: str, qtd: int = 5):
     """
     print('get', '/api/devices/{hnuid}/measurements', hnuid)
     return generate_measurements(qtd)
+
 
 @app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
 def get_device_measurements(hnuid: str, qtd: int = 8):
@@ -480,7 +485,10 @@ def reset_device(hnuid: str):
     device.load = 0
     return {"message": f"Device {hnuid} reset to zero"}
 
-@app.get("/api/ativar-erro", summary='Ativa erro em dispositivos', description='Ativa o erro informado em todos os dispositivos das classes "WL 400" e "WL 180".', tags=['Dispositivos'])
+
+@app.get("/api/ativar-erro", summary='Ativa erro em dispositivos',
+         description='Ativa o erro informado em todos os dispositivos das classes "WL 400" e "WL 180".',
+         tags=['Dispositivos'])
 def ativar_erro(codigo_erro: int = 1):
     """
     Ativa o erro informado em todos os dispositivos das classes 'WL 400' e 'WL 180'.
@@ -496,6 +504,7 @@ def ativar_erro(codigo_erro: int = 1):
             dispositivo.error = codigo_erro
     return f'Erro {codigo_erro} ativado em todos os dispositivos'
 
+
 @app.get("/api/desativar-erro")
 def desativar_erro():
     """
@@ -509,3 +518,40 @@ def desativar_erro():
         if device.className in ["WL 400", "WL 180"]:
             device.error = 0
     return "Erro desativado em todos os dispositivos"
+
+
+import os
+import uvicorn
+
+if __name__ == '__main__':
+    """
+    Inicializa o servidor FastAPI com suporte opcional a HTTPS.
+    Se a variável de ambiente 'ENABLE_SSL' for igual a 'true', o servidor será iniciado com HTTPS utilizando os arquivos de certificado e chave definidos nas variáveis de ambiente 'SSL_CERTFILE' e 'SSL_KEYFILE'.
+    O endereço e a porta do servidor são definidos pelas variáveis de ambiente 'FASTAPI_HOST' e 'FASTAPI_PORT'.
+    """
+    import os
+    import uvicorn
+
+    habilitar_ssl = os.getenv('ENABLE_SSL', 'false').lower() == 'true'
+    print('Habilitar SSL:', habilitar_ssl)
+    endereco_servidor = os.getenv('FASTAPI_HOST', '0.0.0.0')
+    print('FastAPI Host:', endereco_servidor)
+    porta_servidor = int(os.getenv('FASTAPI_PORT', '8000'))
+    print('FastAPI Port:', porta_servidor)
+
+    if habilitar_ssl:
+        caminho_certificado = os.getenv('SSL_CERTFILE', 'ssl/certificado.pem')
+        caminho_chave = os.getenv('SSL_KEYFILE', 'ssl/chave.pem')
+        uvicorn.run(
+            'main:app',
+            host=endereco_servidor,
+            port=porta_servidor,
+            ssl_certfile=caminho_certificado,
+            ssl_keyfile=caminho_chave
+        )
+    else:
+        uvicorn.run(
+            'main:app',
+            host=endereco_servidor,
+            port=porta_servidor
+        )

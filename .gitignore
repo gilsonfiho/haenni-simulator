@@ -4,3 +4,5 @@
 /build-linux.sh
 /build-mac.sh
 /.idea
+/ssl/certificado.pem
+/ssl/chave.pem
