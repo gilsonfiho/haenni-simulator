@@ -16,11 +16,11 @@ from typing import List, Dict, Optional, Union
 from datetime import datetime, timedelta
 import random
 
-
 # Dicionário para armazenar medições persistentes por dispositivo
 
 
 app = FastAPI()
+
 
 class Version(BaseModel):
     """
@@ -81,9 +81,10 @@ class Device(BaseModel):
     firmwareChecksum: Optional[str] = None
     error: Optional[int] = None
 
+
 # Exemplo de dados dos dispositivos
 devices = {
-    #Exemplo de Dados do Modulo de Comunicacao E9023.1
+    # Exemplo de Dados do Modulo de Comunicacao E9023.1
     "100-002-1": Device(
         hnuid="100-002-1",
         className="PC Interface",
@@ -91,7 +92,7 @@ devices = {
         serial=1,
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0")
     ),
-    #Exemplos de Dados dos Modulos de Balanças Dinamicas WL400
+    # Exemplos de Dados dos Modulos de Balanças Dinamicas WL400
     "400-001-40": Device(
         hnuid="400-001-40",
         className="WL 400",
@@ -111,7 +112,7 @@ devices = {
         adjustmentCounter=7,
         firmwareChecksum="1871h",
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0"),
-        error=1
+        error=0
     ),
     "400-001-41": Device(
         hnuid="400-001-41",
@@ -132,9 +133,9 @@ devices = {
         adjustmentCounter=7,
         firmwareChecksum="1871h",
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0"),
-        error=1
+        error=0
     ),
-    #Exemplos de Dados dos Módulos de Balanças Estaticas WL108
+    # Exemplos de Dados dos Módulos de Balanças Estaticas WL108
     "180-001-20": Device(
         hnuid="180-001-20",
         className="WL 180",
@@ -154,7 +155,7 @@ devices = {
         adjustmentCounter=7,
         firmwareChecksum="1871h",
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0"),
-        error=1
+        error=0
     ),
     "180-001-21": Device(
         hnuid="180-001-21",
@@ -175,9 +176,10 @@ devices = {
         adjustmentCounter=7,
         firmwareChecksum="1871h",
         versions=Version(firmware="1.0.0", hardware="1.0.0", hnp="1.1.0"),
-        error=1
+        error=0
     )
 }
+
 
 class Measurement(BaseModel):
     """
@@ -247,6 +249,7 @@ atributos "load" (inteiro) e "indication" (string), acessíveis pelo endpoint:
 http://127.0.0.1:8000/api/devices
 """
 
+
 # Modelo para status do servidor
 class ServerStatus(BaseModel):
     isRunning: bool
@@ -259,6 +262,7 @@ class ServerStatus(BaseModel):
     hnpVersion: str
     wl103LibraryVersion: str
     wl103DriverVersion: str
+
 
 # Exemplo de status do servidor
 server_status = ServerStatus(
@@ -273,6 +277,7 @@ server_status = ServerStatus(
     wl103LibraryVersion="3.2.7",
     wl103DriverVersion="2.8.40"
 )
+
 
 def generate_measurements(num_measurements: int) -> List[Measurement]:
     """
@@ -292,7 +297,7 @@ def generate_measurements(num_measurements: int) -> List[Measurement]:
             timestamp=(current_time - timedelta(seconds=1, milliseconds=200 * i)).isoformat() + "Z",
             load=random.randint(100, 2000),
             speed=round(random.uniform(1, 20), 5),
-            deltaTime=random.randint(100000, 500000),
+            deltaTime=None if i == 0 else random.randint(100000, 500000),
             distribution=[
                 random.randint(0, 100),
                 random.randint(0, 100),
@@ -304,7 +309,7 @@ def generate_measurements(num_measurements: int) -> List[Measurement]:
     return measurements
 
 
-@app.get("/api/status", response_model=ServerStatus)
+@app.get("/api/status", response_model=ServerStatus,  tags=['Status'])
 def get_status():
     """
     Obter status do servidor
@@ -316,7 +321,7 @@ def get_status():
     return server_status
 
 
-@app.put("/api/status", response_model=ServerStatus)
+@app.put("/api/status", response_model=ServerStatus,  tags=['Status'])
 def update_status(isRunning: Optional[bool] = None, consoleVisible: Optional[bool] = None):
     """
     Atualiza o status do servidor.
@@ -336,7 +341,7 @@ def update_status(isRunning: Optional[bool] = None, consoleVisible: Optional[boo
     return server_status
 
 
-@app.get("/api/devices", response_model=Dict[str, Device])
+@app.get("/api/devices", response_model=Dict[str, Device] ,  tags=['Devices'])
 def get_devices():
     """
     Obter todos os dispositivos
@@ -354,7 +359,7 @@ def get_devices():
     return devices
 
 
-@app.get("/api/devices/{hnuid}", response_model=Union[Device, Dict[str, List[Measurement]]])
+@app.get("/api/devices/{hnuid}", response_model=Union[Device, Dict[str, List[Measurement]]],  tags=['Devices'])
 def get_device(hnuid: str, qtd: int = 5):
     """
     Obter um dispositivo específico pelo hnuid
@@ -386,8 +391,7 @@ def get_device(hnuid: str, qtd: int = 5):
         return device
 
 
-
-@app.get("/api/devices/{hnuid}/measurements_old", response_model=List[Measurement])
+@app.get("/api/devices/{hnuid}/measurements_old", response_model=List[Measurement] ,  tags=['Devices'])
 def get_device_measurements(hnuid: str, qtd: int = 5):
     """
     Obter medições de um dispositivo específico
@@ -402,7 +406,8 @@ def get_device_measurements(hnuid: str, qtd: int = 5):
     print('get', '/api/devices/{hnuid}/measurements', hnuid)
     return generate_measurements(qtd)
 
-@app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement])
+
+@app.get("/api/devices/{hnuid}/measurements", response_model=List[Measurement],  tags=['Devices'])
 def get_device_measurements(hnuid: str, qtd: int = 8):
     """
     Obtém e adiciona uma nova medição para um dispositivo específico.
@@ -440,12 +445,14 @@ def get_device_measurements(hnuid: str, qtd: int = 8):
 
     # Adiciona a nova medição à lista do dispositivo na primeira posição
     persistent_measurements[hnuid].insert(0, new_measurement)
+    if len(persistent_measurements[hnuid]) == 1:
+        persistent_measurements[hnuid][0].deltaTime = None
 
     # Retorna a lista completa de medições para o dispositivo
     return persistent_measurements[hnuid]
 
 
-@app.put("/api/devices/measurements")
+@app.put("/api/devices/measurements",  tags=['Devices'])
 def update_measurements():
     """
     Endpoint para simular atualização de medições.
@@ -458,16 +465,22 @@ def update_measurements():
     return "OK"
 
 
-@app.put("/api/devices/{hnuid}/zero")
+@app.put("/api/devices/{hnuid}/zero",
+         summary='Reseta as o ponto zero do dispositivo',
+         description='Reseta as medições de um dispositivo específico identificado pelo "hnuid".',
+         tags=['Devices'])
 def reset_device(hnuid: str):
     """
-    Reseta as medições de um dispositivo específico
+        Reseta a carga ZERO do dispositivo identificado pelo 'hnuid'.
 
-    Args:
-        hnuid (str): ID do dispositivo.
+        <p>Essa função permite redefinir a carga de um dispositivo identificado pelo 'hnuid' para zero.</p>
+        <p>Se o dispositivo não for encontrado, uma exceção será lançada com o código de status HTTP 404.</p>
 
-    Returns:
-        dict: Mensagem de confirmação do reset.
+        Parâmetros:
+            identificador_dispositivo (str): Identificador único do dispositivo ('hnuid').
+
+        Retorna:
+            dict: Mensagem de confirmação indicando que o dispositivo foi resetado.
     """
     print('put', '/api/devices/{hnuid}/zero', hnuid)
     device = devices.get(hnuid)
@@ -477,3 +490,78 @@ def reset_device(hnuid: str):
     # Simulando o reset da carga do dispositivo para 0
     device.load = 0
     return {"message": f"Device {hnuid} reset to zero"}
+
+
+@app.get("/api/ativar-erro",
+         summary='Ativa erro em dispositivos',
+         description='Ativa o erro informado em todos os dispositivos das classes "WL 400" e "WL 180".',
+         tags=['Simulação de Erro'])
+def ativar_erro(codigo_erro: int = 1):
+    """
+    Ativa o erro informado em todos os dispositivos das classes 'WL 400' e 'WL 180'.
+
+    Parâmetros:
+        codigo_erro (int): Código do erro a ser ativado.
+
+    Retorna:
+        str: confirmação da operação.
+    """
+    for dispositivo in devices.values():
+        if dispositivo.className in ["WL 400", "WL 180"]:
+            dispositivo.error = codigo_erro
+    return f'Erro {codigo_erro} ativado em todos os dispositivos'
+
+
+@app.get("/api/desativar-erro",
+         summary='Desativa erro em dispositivos',
+         description='Desativa o erro informado em todos os dispositivos das classes "WL 400" e "WL 180".',
+         tags=['Simulação de Erro'])
+def desativar_erro():
+    """
+    Desativa o erro 1 em todos os dispositivos.
+
+    Returns:
+        str: confirmação da operação.
+    """
+    print('get', '/api/desativar-erro')
+    for device in devices.values():
+        if device.className in ["WL 400", "WL 180"]:
+            device.error = 0
+    return "Erro desativado em todos os dispositivos"
+
+
+import os
+import uvicorn
+
+if __name__ == '__main__':
+    """
+    Inicializa o servidor FastAPI com suporte opcional a HTTPS.
+    Se a variável de ambiente 'ENABLE_SSL' for igual a 'true', o servidor será iniciado com HTTPS utilizando os arquivos de certificado e chave definidos nas variáveis de ambiente 'SSL_CERTFILE' e 'SSL_KEYFILE'.
+    O endereço e a porta do servidor são definidos pelas variáveis de ambiente 'FASTAPI_HOST' e 'FASTAPI_PORT'.
+    """
+    import os
+    import uvicorn
+
+    habilitar_ssl = os.getenv('ENABLE_SSL', 'false').lower() == 'true'
+    print('Habilitar SSL:', habilitar_ssl)
+    endereco_servidor = os.getenv('FASTAPI_HOST', '0.0.0.0')
+    print('FastAPI Host:', endereco_servidor)
+    porta_servidor = int(os.getenv('FASTAPI_PORT', '8000'))
+    print('FastAPI Port:', porta_servidor)
+
+    if habilitar_ssl:
+        caminho_certificado = os.getenv('SSL_CERTFILE', 'ssl/certificado.pem')
+        caminho_chave = os.getenv('SSL_KEYFILE', 'ssl/chave.pem')
+        uvicorn.run(
+            'main:app',
+            host=endereco_servidor,
+            port=porta_servidor,
+            ssl_certfile=caminho_certificado,
+            ssl_keyfile=caminho_chave
+        )
+    else:
+        uvicorn.run(
+            'main:app',
+            host=endereco_servidor,
+            port=porta_servidor
+        )
